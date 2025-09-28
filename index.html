@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZeroX - Ayollar Parfyumeriya</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(120deg, #ffcce6, #ff99cc);
+            color: #333;
+        }
+
+        /* Navbar */
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #cc3366;
+            padding: 10px 20px;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+        .navbar .logo {
+            font-weight: bold;
+            font-size: 24px;
+            color: #fff;
+        }
+        .navbar .subtitle {
+            font-size: 12px;
+            font-style: italic;
+            color: #ffe6f0;
+        }
+        .navbar .nav-links {
+            display: flex;
+            gap: 15px;
+        }
+        .navbar .nav-links a {
+            color: #fff;
+            text-decoration: none;
+            font-weight: bold;
+            transition: 0.3s;
+        }
+        .navbar .nav-links a:hover {
+            text-decoration: underline;
+        }
+
+        /* Qidiruv tizimi */
+        .search-bar {
+            margin: 20px;
+            text-align: center;
+        }
+        .search-bar input[type="text"] {
+            padding: 10px;
+            width: 50%;
+            border-radius: 20px;
+            border: 1px solid #cc3366;
+            outline: none;
+        }
+
+        /* Maxsulotlar */
+        .products {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            padding: 20px;
+        }
+        .product-card {
+            background: #ffe6f0;
+            border: 1px solid #cc3366;
+            border-radius: 10px;
+            padding: 10px;
+            text-align: center;
+            transition: transform 0.3s;
+        }
+        .product-card:hover {
+            transform: scale(1.05);
+        }
+        .product-card img {
+            width: 100%;
+            height: 150px;
+            object-fit: cover;
+            border-radius: 10px;
+        }
+        .product-card .name {
+            font-weight: bold;
+            margin: 5px 0;
+        }
+        .product-card .price {
+            color: #cc3366;
+            font-weight: bold;
+        }
+        .product-card .rating {
+            color: #ffcc00;
+            margin-top: 5px;
+        }
+
+        /* Yakuniy qism */
+        .footer {
+            background: #cc3366;
+            color: #fff;
+            padding: 30px 20px;
+        }
+        .footer .section {
+            margin-bottom: 20px;
+        }
+        .footer a {
+            color: #fff;
+            text-decoration: none;
+        }
+        .footer a:hover {
+            text-decoration: underline;
+        }
+        .footer .socials {
+            display: flex;
+            gap: 10px;
+        }
+        .footer iframe {
+            width: 100%;
+            height: 200px;
+            border: 0;
+            border-radius: 10px;
+        }
+        .footer-bottom {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 14px;
+        }
+
+        @keyframes bgAnim {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        body {
+            background-size: 200% 200%;
+            animation: bgAnim 15s ease infinite;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Navbar -->
+    <div class="navbar">
+        <div>
+            <div class="logo">ZeroX</div>
+            <div class="subtitle">bu yerda siz istagan atrlar</div>
+        </div>
+        <div class="nav-links">
+            <a href="#">Yangi tovarlar</a>
+            <a href="#">Chegirmalar</a>
+            <a href="#">Savat</a>
+            <a href="#">Sozlamalar</a>
+            <a href="#">Til</a>
+            <a href="#">Profil</a>
+        </div>
+    </div>
+
+    <!-- Qidiruv tizimi -->
+    <div class="search-bar">
+        <input type="text" placeholder="Qidirish...">
+    </div>
+
+    <!-- Maxsulotlar -->
+    <!-- Maxsulotlar -->
+<!-- Maxsulotlar -->
+<div class="products">
+    <!-- 36 ta maxsulot 4 ustun 9 qator -->
+    <div class="product-card"><img src="1.png" alt="Rose Essence"><div class="name">Rose Essence</div><div class="price">120 000 so'm</div><div class="rating">★★★★☆</div></div>
+    <div class="product-card"><img src="2.png" alt="Lavender Mist"><div class="name">Lavender Mist</div><div class="price">115 000 so'm</div><div class="rating">★★★★☆</div></div>
+    <div class="product-card"><img src="3.png" alt="Vanilla Dream"><div class="name">Vanilla Dream</div><div class="price">125 000 so'm</div><div class="rating">★★★★★</div></div>
+    <div class="product-card"><img src="4.png" alt="Jasmine Bliss"><div class="name">Jasmine Bliss</div><div class="price">130 000 so'm</div><div class="rating">★★★★☆</div></div>
+    <div class="product-card"><img src="5.png" alt="Peony Charm"><div class="name">Peony Charm</div><div class="price">110 000 so'm</div><div class="rating">★★★★☆</div></div>
+    <div class="product-card"><img src="6.png" alt="Orchid Glow"><div class="name">Orchid Glow</div><div class="price">140 000 so'm</div><div class="rating">★★★★★</div></div>
+    <div class="product-card"><img src="7.png" alt="Citrus Fresh"><div class="name">Citrus Fresh</div><div class="price">105 000 so'm</div><div class="rating">★★★★☆</div></div>
+    <div class="product-card"><img src="8.png" alt="Musk Delight"><div class="name">Musk Delight</div><div class="price">125 000 so'm</div><div class="rating">★★★★☆</div></div>
+    <div class="product-card"><img src="9.png" alt="Cherry Blossom"><div class="name">Cherry Blossom</div><div class="price">115 000 so'm</div><div class="rating">★★★★★</div></div>
+
+    <div class="product-card"><img src="10.png" alt="Amber Nights"><div class="name">Amber Nights</div><div class="price">130 000 so'm</div><div class="rating">★★★★☆</div></div>
+    <div class="product-card"><img src="11.png" alt="Sandalwood Aura"><div class="name">Sandalwood Aura</div><div class="price">120 000 so'm</div><div class="rating">★★★★☆</div></div>
+    <div class="product-card"><img src="12.png" alt="Ocean Breeze"><div class="name">Ocean Breeze</div><div class="price">125 000 so'm</div><div class="rating">★★★★★</div></div>
+    <div class="product-card"><img src="13.png" alt="Peach Paradise"><div class="name">Peach Paradise</div><div class="price">110 000 so'm</div><div class="rating">★★★★☆</div></div>
+    <div class="product-card"><img src="14.png" alt="Rose Petals"><div class="name">Rose Petals</div><div class="price">135 000 so'm</div><div class="rating">★★★★★</div></div>
+    <div class="product-card"><img src="15.png" alt="Vanilla Sky"><div class="name">Vanilla Sky</div><div class="price">120 000 so'm</div><div class="rating">★★★★☆</div></div>
+    <div class="product-card"><img src="16.png" alt="Lavender Fields"><div class="name">Lavender Fields</div><div class="price">115 000 so'm</div><div class="rating">★★★★☆</div></div>
+    <div class="product-card"><img src="17.png" alt="Gardenia Glow"><div class="name">Gardenia Glow</div><div class="price">125 000 so'm</div><div class="rating">★★★★★</div></div>
+    <div class="product-card"><img src="18.png" alt="Coco Blossom"><div class="name">Coco Blossom</div><div class="price">130 000 so'm</div><div class="rating">★★★★☆</div></div>
+
+    <div class="product-card"><img src="19.png" alt="Jasmine Night"><div class="name">Jasmine Night</div><div class="price">120 000 so'm</div><div class="rating">★★★★☆</div></div>
+    <div class="product-card"><img src="20.png" alt="Cherry Glow"><div class="name">Cherry Glow</div><div class="price">115 000 so'm</div><div class="rating">★★★★★</div></div>
+    <div class="product-card"><img src="21.png" alt="Rose Morning"><div class="name">Rose Morning</div><div class="price">130 000 so'm</div><div class="rating">★★★★☆</div></div>
+    <div class="product-card"><img src="22.png" alt="Vanilla Bloom"><div class="name">Vanilla Bloom</div><div class="price">125 000 so'm</div><div class="rating">★★★★☆</div></div>
+    <div class="product-card"><img src="23.png" alt="Peony Glow"><div class="name">Peony Glow</div><div class="price">120 000 so'm</div><div class="rating">★★★★★</div></div>
+    <div class="product-card"><img src="24.png" alt="Orchid Mist"><div class="name">Orchid Mist</div><div class="price">135 000 so'm</div><div class="rating">★★★★☆</div></div>
+    <div class="product-card"><img src="25.png" alt="Citrus Kiss"><div class="name">Citrus Kiss</div><div class="price">110 000 so'm</div><div class="rating">★★★★☆</div></div>
+    <div class="product-card"><img src="26.png" alt="Amber Glow"><div class="name">Amber Glow</div><div class="price">125 000 so'm</div><div class="rating">★★★★★</div></div>
+    <div class="product-card"><img src="27.png" alt="Sandalwood Breeze"><div class="name">Sandalwood Breeze</div><div class="price">130 000 so'm</div><div class="rating">★★★★☆</div></div>
+
+    <div class="product-card"><img src="28.png" alt="Ocean Mist"><div class="name">Ocean Mist</div><div class="price">120 000 so'm</div><div class="rating">★★★★☆</div></div>
+    <div class="product-card"><img src="29.png" alt="Peach Bloom"><div class="name">Peach Bloom</div><div class="price">125 000 so'm</div><div class="rating">★★★★★</div></div>
+    <div class="product-card"><img src="30.png" alt="Jasmine Glow"><div class="name">Jasmine Glow</div><div class="price">115 000 so'm</div><div class="rating">★★★★☆</div></div>
+    <div class="product-card"><img src="31.png" alt="Cherry Petals"><div class="name">Cherry Petals</div><div class="price">120 000 so'm</div><div class="rating">★★★★☆</div></div>
+    <div class="product-card"><img src="32.png" alt="Rose Delight"><div class="name">Rose Delight</div><div class="price">130 000 so'm</div><div class="rating">★★★★★</div></div>
+    <div class="product-card"><img src="33.png" alt="Vanilla Glow"><div class="name">Vanilla Glow</div><div class="price">125 000 so'm</div><div class="rating">★★★★☆</div></div>
+    <div class="product-card"><img src="34.png" alt="Lavender Charm"><div class="name">Lavender Charm</div><div class="price">115 000 so'm</div><div class="rating">★★★★☆</div></div>
+    <div class="product-card"><img src="35.png" alt="Peony Nights"><div class="name">Peony Nights</div><div class="price">120 000 so'm</div><div class="rating">★★★★★</div></div>
+    <div class="product-card"><img src="36.png" alt="Orchid Dreams"><div class="name">Orchid Dreams</div><div class="price">130 000 so'm</div><div class="rating">★★★★☆</div></div>
+</div>
+
+
+
+    <!-- Yakuniy qism -->
+    <div class="footer">
+        <div class="section">
+            <h3>Biz bilan bog'lanish</h3>
+            <p>Email: info@zxzx.uz | Telefon: +998 90 123 45 67</p>
+        </div>
+        <div class="section">
+            <h3>Bizning hamkorlar</h3>
+            <p>CHANEL, LAVANDA , TOSHKENTPARFEMERIUM</p>
+        </div>
+        <div class="section">
+            <h3>Do'konimiz</h3>
+            <p>Toshkent,Sergeli,Yangi hayot t. 3-metro bekt,Istiqlol ko'chasi 49-uy</p>
+        </div>
+        <div class="section">
+            <h3>Ijtimoiy tarmoqlar</h3>
+            <div class="socials">
+                <a href="#">Instagram</a>
+                <a href="#">Facebook</a>
+                <a href="#">Telegram</a>
+            </div>
+        </div>
+        <div class="section">
+            <h3>Xarita</h3>
+            <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2995.108888888888!2d69.2817!3d41.2995!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x38ae8b2f6d1fcd9b%3A0x123456789abcdef!2sToshkent!5e0!3m2!1suz!2s!4v1695850000000!5m2!1suz!2s" allowfullscreen="" loading="lazy"></iframe>
+        </div>
+        <div class="footer-bottom">
+            &copy; <span id="year"></span> ZeroX. Barcha huquqlar himoyalangan.
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('year').textContent = new Date().getFullYear();
+    </script>
+
+</body>
+</html>
