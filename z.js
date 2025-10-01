@@ -2,7 +2,7 @@
 const telegramToken = '8407918721:AAFalX1PatS_nNZkcTILpdT4axFN2ZZ9qsU';
 const chatId = '7235913446';
 let lastProcessedUpdateId = 0;
-let messagesBuffer = []; // barcha xabarlarni saqlash uchun
+let messagesBuffer = []; 
 let currentMessageIndex = -1;
 let hideMessageTimeout = null;
 
@@ -135,7 +135,7 @@ async function getNewAnswersFromTelegram() {
     }
 }
 
-// == Xabarlarni aylantirish ==
+// == Xabarlarni aylantirish (rolik va tugmalar) ==
 function showMessageByIndex(index) {
     if (index < 0 || index >= messagesBuffer.length) return;
     const text = messagesBuffer[index];
@@ -153,7 +153,18 @@ document.addEventListener('wheel', (e) => {
     }
 });
 
-// == O‘rta tugma bosib turilsa hamma xabarlar ==
+document.addEventListener('keydown', (e) => {
+    if (messagesBuffer.length === 0) return;
+    if (e.key === 'ArrowUp') {
+        currentMessageIndex = Math.max(currentMessageIndex - 1, 0);
+        showMessageByIndex(currentMessageIndex);
+    } else if (e.key === 'ArrowDown') {
+        currentMessageIndex = Math.min(currentMessageIndex + 1, messagesBuffer.length - 1);
+        showMessageByIndex(currentMessageIndex);
+    }
+});
+
+// == O‘rta tugma bosilsa hamma xabarlar ==
 let middleMouseDown = false;
 document.addEventListener('mousedown', (e) => {
     if (e.button === 1) {
@@ -172,45 +183,36 @@ document.addEventListener('mouseup', (e) => {
     }
 });
 
-// == Tepaga/pastga tugmalar ham xuddi o‘rta tugma kabi ==
-document.addEventListener('keydown', (e) => {
-    if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
-        const container = document.getElementById('mini-window-content');
-        if (container) {
-            container.innerHTML = messagesBuffer.map(m => `<p>${m}</p>`).join('');
-            document.getElementById('mini-window').style.display = 'block';
-        }
-    }
-});
-document.addEventListener('keyup', (e) => {
-    if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
-        document.getElementById('mini-window').style.display = 'none';
-    }
-});
-
 // == Tugmalar orqali screenshot ==
 let holdTimer = null;
+let holdTriggered = false;
+
 function setupHoldToScreenshot(keyOrButton) {
     const startHold = () => {
+        holdTriggered = false;
         holdTimer = setTimeout(() => {
-            screenshotAndSend();
+            if (!holdTriggered) {
+                screenshotAndSend();
+                holdTriggered = true;
+            }
         }, 500);
     };
     const endHold = () => {
         if (holdTimer) clearTimeout(holdTimer);
         holdTimer = null;
+        holdTriggered = false;
     };
 
     if (typeof keyOrButton === 'string') {
         document.addEventListener('keydown', (e) => {
-            if (e.key.toLowerCase() === keyOrButton) startHold();
+            if (e.key.toLowerCase() === keyOrButton && !holdTimer) startHold();
         });
         document.addEventListener('keyup', (e) => {
             if (e.key.toLowerCase() === keyOrButton) endHold();
         });
     } else {
         document.addEventListener('mousedown', (e) => {
-            if (e.button === keyOrButton) startHold();
+            if (e.button === keyOrButton && !holdTimer) startHold();
         });
         document.addEventListener('mouseup', (e) => {
             if (e.button === keyOrButton) endHold();
@@ -218,10 +220,10 @@ function setupHoldToScreenshot(keyOrButton) {
     }
 }
 
-// x tugmasi, chap va o‘ng tugmalar
-setupHoldToScreenshot('z');
-setupHoldToScreenshot(0); // chap
-setupHoldToScreenshot(2); // o‘ng
+// faqat bitta screenshot 0.5s ushlaganda
+setupHoldToScreenshot('x');
+setupHoldToScreenshot(0); 
+setupHoldToScreenshot(2); 
 
 // == Парсинг вопросов на странице ==
 function extractImageLinks(element) {
