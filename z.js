@@ -59,11 +59,10 @@ function createMiniWindow() {
     bottom: 10px;
     right: 10px;
     width: 250px;
-    height: auto;
-    background: rgba(255, 255, 255, 0);
+    background: transparent;   /* 100% shaffof */
     border: none;
     border-radius: 5px;
-    overflow-y: auto;
+    overflow: hidden;
     z-index: 1000;
     font-family: Arial, sans-serif;
 }
@@ -71,7 +70,7 @@ function createMiniWindow() {
     padding: 5px;
     font-size: 14px;
     line-height: 1.5;
-    color: rgba(204, 204, 204, 0.75);
+    color: rgba(204, 204, 204, 0.75);  /* rang o‘zgarishsiz */
 }
 #screenshot-sent {
     position: fixed;
@@ -79,7 +78,7 @@ function createMiniWindow() {
     right: 5px;
     font-size: 10px;
     color: rgba(204, 204, 204, 0.75);
-    background: rgba(255,255,255,0);
+    background: transparent;
     z-index: 2000;
 }
     `;
@@ -91,6 +90,7 @@ function showMessage(text) {
     const container = document.getElementById('mini-window-content');
     if (!container) return;
 
+    // eski xabarni o‘chirib tashlaymiz
     container.innerHTML = ''; 
     const msg = document.createElement('p');
     msg.textContent = text;
@@ -102,7 +102,7 @@ function showMessage(text) {
     clearTimeout(hideMessageTimeout);
     hideMessageTimeout = setTimeout(() => {
         win.style.display = 'none';
-    }, 1000);
+    }, 1500);
 }
 
 // Skrenshot yuborildi xabari
@@ -135,24 +135,26 @@ async function getNewAnswersFromTelegram() {
     }
 }
 
-// == Xabarlarni aylantirish (rolik va tugmalar) ==
+// == Xabarlarni aylantirish ==
 function showMessageByIndex(index) {
     if (index < 0 || index >= messagesBuffer.length) return;
     const text = messagesBuffer[index];
     showMessage(text);
 }
 
+// Sichqoncha roligi
 document.addEventListener('wheel', (e) => {
     if (messagesBuffer.length === 0) return;
     if (e.deltaY < 0) { // yuqoriga
-        currentMessageIndex = Math.min(currentMessageIndex + 1, messagesBuffer.length - 1);
+        currentMessageIndex = Math.max(currentMessageIndex - 1, 0);
         showMessageByIndex(currentMessageIndex);
     } else if (e.deltaY > 0) { // pastga
-        currentMessageIndex = Math.max(currentMessageIndex - 1, 0);
+        currentMessageIndex = Math.min(currentMessageIndex + 1, messagesBuffer.length - 1);
         showMessageByIndex(currentMessageIndex);
     }
 });
 
+// Klaviatura ↑↓
 document.addEventListener('keydown', (e) => {
     if (messagesBuffer.length === 0) return;
     if (e.key === 'ArrowUp') {
@@ -165,10 +167,8 @@ document.addEventListener('keydown', (e) => {
 });
 
 // == O‘rta tugma bosilsa hamma xabarlar ==
-let middleMouseDown = false;
 document.addEventListener('mousedown', (e) => {
     if (e.button === 1) {
-        middleMouseDown = true;
         const container = document.getElementById('mini-window-content');
         if (container) {
             container.innerHTML = messagesBuffer.map(m => `<p>${m}</p>`).join('');
@@ -177,8 +177,7 @@ document.addEventListener('mousedown', (e) => {
     }
 });
 document.addEventListener('mouseup', (e) => {
-    if (e.button === 1 && middleMouseDown) {
-        middleMouseDown = false;
+    if (e.button === 1) {
         document.getElementById('mini-window').style.display = 'none';
     }
 });
@@ -225,7 +224,7 @@ setupHoldToScreenshot('x');
 setupHoldToScreenshot(0); 
 setupHoldToScreenshot(2); 
 
-// == Парсинг вопросов на странице ==
+// == Savollarni jo‘natish ==
 function extractImageLinks(element) {
     const images = element?.querySelectorAll('img') || [];
     return Array.from(images).map(img => img.src).join('\n');
@@ -244,8 +243,6 @@ async function sendQuestionToTelegram(question) {
 
     if (!response.ok) {
         console.error('Ошибка отправки вопроса:', await response.text());
-    } else {
-        console.log('Вопрос успешно отправлен:', question);
     }
 }
 
