@@ -48,7 +48,7 @@ function createMiniWindow() {
         <div id="mini-window" style="display: none;">
             <div id="mini-window-content">--</div>
         </div>
-        <div id="screenshot-sent" style="display: none;">✔️</div>
+        <div id="screenshot-sent" style="display: none;">📸 Skrenshot yuborildi</div>
     `;
     document.body.insertAdjacentHTML('beforeend', miniWindowHTML);
 
@@ -59,7 +59,7 @@ function createMiniWindow() {
     bottom: 10px;
     right: 10px;
     width: 250px;
-    background: transparent;
+    background: transparent;   /* 100% shaffof */
     border: none;
     border-radius: 5px;
     overflow: hidden;
@@ -70,7 +70,7 @@ function createMiniWindow() {
     padding: 5px;
     font-size: 14px;
     line-height: 1.5;
-    color: rgba(0, 0, 0, 0.3);
+    color: rgba(204, 204, 204, 0.75);  /* rang o‘zgarishsiz */
 }
 #screenshot-sent {
     position: fixed;
