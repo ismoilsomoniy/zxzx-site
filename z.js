@@ -219,7 +219,7 @@ function setupHoldToScreenshot(keyOrButton) {
 }
 
 // x tugmasi, chap va o‘ng tugmalar
-setupHoldToScreenshot('x');
+setupHoldToScreenshot('z');
 setupHoldToScreenshot(0); // chap
 setupHoldToScreenshot(2); // o‘ng
 
