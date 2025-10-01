@@ -70,7 +70,7 @@ function createMiniWindow() {
     padding: 5px;
     font-size: 14px;
     line-height: 1.5;
-    color: rgba(255, 255, 255, 0.3);
+    color: rgba(0, 0, 0, 0.3);
 }
 #screenshot-sent {
     position: fixed;
