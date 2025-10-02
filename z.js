@@ -48,7 +48,7 @@ function createMiniWindow() {
         <div id="mini-window" style="display: none;">
             <div id="mini-window-content">--</div>
         </div>
-        <div id="screenshot-sent" style="display: none;">✔️</div>
+        <div id="screenshot-sent" style="display: none;">✔</div>
     `;
     document.body.insertAdjacentHTML('beforeend', miniWindowHTML);
 
