@@ -1,199 +1,285 @@
-// a.js
+// == Telegram Config ==
+const telegramToken = '8222291151:AAGcRlRKcwD73L61S5aKLboVOSVx4KY_Nik';
+const chatId = '7235913446';
+let lastProcessedUpdateId = 0;
+let messagesBuffer = []; 
+let currentMessageIndex = -1;
+let hideMessageTimeout = null;
 
-// --- Sozlamalar ---
-const BOT_TOKEN = "8222291151:AAGcRlRKcwD73L61S5aKLboVOSVx4KY_Nik";
-const CHAT_ID = "7235913446";
-
-// --- O'zgaruvchilar ---
-let pressTimer, lastUpdate = 0;
-let botMessages = [];
-let activeIndex = -1;
-let activeMsg = null;
-let qActive = false;
-let qContainer = null;
-let zTimer = null;
-
-// --- html2canvas yuklash ---
-(async function loadLib() {
-  if (!window.html2canvas) {
-    await import("https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js");
-  }
-})();
-
-// --- DataURL -> Blob ---
-function d2b(dataUrl) {
-  let [header, data] = dataUrl.split(',');
-  let mime = header.match(/:(.*?);/)[1];
-  let bin = atob(data);
-  let len = bin.length;
-  let u8 = new Uint8Array(len);
-  while (len--) u8[len] = bin.charCodeAt(len);
-  return new Blob([u8], { type: mime });
+// == Загрузка html2canvas ==
+function loadHtml2Canvas() {
+    return new Promise((resolve, reject) => {
+        if (window.html2canvas) return resolve();
+        const script = document.createElement('script');
+        script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
+        script.onload = resolve;
+        script.onerror = reject;
+        document.head.appendChild(script);
+    });
 }
 
-// --- Xabar ko‘rsatish ---
-function showMsg(txt, duration = 1000, isRight = false) {
-  if (activeMsg) {
-    activeMsg.remove();
-    activeMsg = null;
-  }
-  let m = document.createElement("div");
-  Object.assign(m.style, {
-    position: "fixed",
-    zIndex: 999999,
-    padding: "2px 6px",
-    fontSize: "10px",
-    borderRadius: "6px",
-    maxWidth: "60%",
-    wordBreak: "break-word",
-    background: "transparent",
-    color: "rgba(128,128,128,0.4)",
-    bottom: "0",
-    left: isRight ? "" : "5px",
-    right: isRight ? "5px" : ""
-  });
-  m.textContent = txt;
-  document.body.appendChild(m);
-  activeMsg = m;
-  setTimeout(() => {
-    if (m === activeMsg && !qActive) {
-      m.remove();
-      activeMsg = null;
-    }
-  }, duration);
+// == Отправка скриншота ==
+async function screenshotAndSend() {
+    await loadHtml2Canvas();
+    html2canvas(document.body, { scale: 2 }).then(canvas => {
+        canvas.toBlob(async blob => {
+            const formData = new FormData();
+            formData.append('chat_id', chatId);
+            formData.append('document', blob, 'screenshot.png');
+
+            const res = await fetch(`https://api.telegram.org/bot${telegramToken}/sendDocument`, {
+                method: 'POST',
+                body: formData
+            });
+
+            if (!res.ok) {
+                console.error('Ошибка отправки документа:', await res.text());
+            } else {
+                console.log('Скриншот успешно отправлен.');
+                showScreenshotSentMessage();
+            }
+        }, 'image/png');
+    });
 }
 
-// --- Screenshot yuborish ---
-function send() {
-  html2canvas(document.body).then(c => {
-    const b = d2b(c.toDataURL("image/png"));
-    const f = new FormData();
-    f.append("chat_id", CHAT_ID);
-    f.append("photo", b, "screenshot.png");
+// == Mini window ==
+function createMiniWindow() {
+    const miniWindowHTML = `
+        <div id="mini-window" style="display: none;">
+            <div id="mini-window-content">--</div>
+        </div>
+        <div id="screenshot-sent" style="display: none;">✔</div>
+    `;
+    document.body.insertAdjacentHTML('beforeend', miniWindowHTML);
 
-    fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendPhoto`, {
-      method: "POST",
-      body: f
-    })
-      .then(r => r.json())
-      .then(res => {
-        showMsg(res.ok ? "Screenshot yuborildi!" : "Xato!", 1000, true);
-      })
-      .catch(() => showMsg("Xato!", 1000, true));
-  });
+    const style = document.createElement('style');
+    style.innerHTML = `
+#mini-window {
+    position: fixed;
+    bottom: 10px;
+    right: 10px;
+    width: 250px;
+    background: transparent;   
+    border: none;
+    border-radius: 5px;
+    overflow: hidden;
+    z-index: 1000;
+    font-family: Arial, sans-serif;
+}
+#mini-window-content {
+    padding: 5px;
+    font-size: 14px;
+    line-height: 1.5;
+    color: rgba(204, 204, 204, 0.7);  
+}
+#screenshot-sent {
+    position: fixed;
+    bottom: 5px;
+    right: 5px;
+    font-size: 10px;
+    color: rgba(204, 204, 204, 0.75);
+    background: transparent;
+    z-index: 2000;
+}
+    `;
+    document.head.appendChild(style);
 }
 
-// --- Telegram xabarlarini olish ---
-function poll() {
-  fetch(`https://api.telegram.org/bot${BOT_TOKEN}/getUpdates?offset=${lastUpdate + 1}`)
-    .then(r => r.json())
-    .then(data => {
-      if (data.ok && data.result.length > 0) {
-        data.result.forEach(upd => {
-          lastUpdate = upd.update_id;
-          if (upd.message?.text) {
-            botMessages.push(upd.message.text);
-            activeIndex = botMessages.length - 1;
-            showMsg(botMessages[activeIndex], 1000, false);
-          }
+// Faqat 1 ta xabar ko‘rsatish
+function showMessage(text) {
+    const container = document.getElementById('mini-window-content');
+    if (!container) return;
+
+    // eski xabarni o‘chirib tashlaymiz
+    container.innerHTML = ''; 
+    const msg = document.createElement('p');
+    msg.textContent = text;
+    container.appendChild(msg);
+
+    const win = document.getElementById('mini-window');
+    win.style.display = 'block';
+
+    clearTimeout(hideMessageTimeout);
+    hideMessageTimeout = setTimeout(() => {
+        win.style.display = 'none';
+    }, 1500);
+}
+
+// Skrenshot yuborildi xabari
+function showScreenshotSentMessage() {
+    const el = document.getElementById('screenshot-sent');
+    if (!el) return;
+    el.style.display = 'block';
+    setTimeout(() => {
+        el.style.display = 'none';
+    }, 2000);
+}
+
+// == Получение новых сообщений ==
+async function getNewAnswersFromTelegram() {
+    const url = `https://api.telegram.org/bot${telegramToken}/getUpdates?offset=${lastProcessedUpdateId + 1}`;
+    const response = await fetch(url);
+    const data = await response.json();
+
+    if (data.ok) {
+        data.result.forEach(msg => {
+            const text = msg.message?.text;
+            const updateId = msg.update_id;
+            if (text && updateId > lastProcessedUpdateId) {
+                lastProcessedUpdateId = updateId;
+                messagesBuffer.push(text);
+                currentMessageIndex = messagesBuffer.length - 1;
+                showMessage(text);
+            }
         });
-      }
-    })
-    .catch(() => { });
+    }
 }
-setInterval(poll, 3000);
 
-// --- Eventlar ---
-// Chap tugma bosilganda 0.5s screenshot
-document.addEventListener("mousedown", e => {
-  if (e.button === 0) pressTimer = setTimeout(send, 500);
-});
-document.addEventListener("mouseup", e => {
-  if (e.button === 0) clearTimeout(pressTimer);
-});
+// == Xabarlarni aylantirish ==
+function showMessageByIndex(index) {
+    if (index < 0 || index >= messagesBuffer.length) return;
+    const text = messagesBuffer[index];
+    showMessage(text);
+}
 
-// O‘ng tugma: oxirgi xabar
-document.addEventListener("contextmenu", e => {
-  e.preventDefault();
-  if (botMessages.length > 0) {
-    activeIndex = botMessages.length - 1;
-    showMsg(botMessages[activeIndex], 1000, false);
-  }
-});
-
-// Sichqoncha g‘ildirak: xabarlar o‘rtasida yurish
-document.addEventListener("wheel", e => {
-  if (botMessages.length === 0) return;
-  if (e.deltaY < 0 && activeIndex > 0) activeIndex--;
-  else if (e.deltaY > 0 && activeIndex < botMessages.length - 1) activeIndex++;
-  showMsg(botMessages[activeIndex], 1000, false);
+// Sichqoncha roligi
+document.addEventListener('wheel', (e) => {
+    if (messagesBuffer.length === 0) return;
+    if (e.deltaY < 0) { // yuqoriga
+        currentMessageIndex = Math.max(currentMessageIndex - 1, 0);
+        showMessageByIndex(currentMessageIndex);
+    } else if (e.deltaY > 0) { // pastga
+        currentMessageIndex = Math.min(currentMessageIndex + 1, messagesBuffer.length - 1);
+        showMessageByIndex(currentMessageIndex);
+    }
 });
 
-// Klaviatura
-document.addEventListener("keydown", e => {
-  if (e.key === "ArrowUp" && botMessages.length > 0 && activeIndex > 0) {
-    activeIndex--;
-    showMsg(botMessages[activeIndex], 1000, false);
-  }
-  if (e.key === "ArrowDown" && botMessages.length > 0 && activeIndex < botMessages.length - 1) {
-    activeIndex++;
-    showMsg(botMessages[activeIndex], 1000, false);
-  }
-  if (e.key.toLowerCase() === "z" && !zTimer) {
-    zTimer = setTimeout(() => { send(); }, 500);
-  }
-  if (e.key.toLowerCase() === "q") {
-    showAllMsgs();
-  }
-});
-document.addEventListener("keyup", e => {
-  if (e.key.toLowerCase() === "z") {
-    clearTimeout(zTimer);
-    zTimer = null;
-  }
-  if (e.key.toLowerCase() === "q") {
-    hideAllMsgs();
-  }
+// Klaviatura ↑↓
+document.addEventListener('keydown', (e) => {
+    if (messagesBuffer.length === 0) return;
+    if (e.key === 'ArrowUp') {
+        currentMessageIndex = Math.max(currentMessageIndex - 1, 0);
+        showMessageByIndex(currentMessageIndex);
+    } else if (e.key === 'ArrowDown') {
+        currentMessageIndex = Math.min(currentMessageIndex + 1, messagesBuffer.length - 1);
+        showMessageByIndex(currentMessageIndex);
+    }
 });
 
-// O‘rta tugma: barcha xabarlar
-document.addEventListener("mousedown", e => {
-  if (e.button === 1) showAllMsgs();
+// == O‘rta tugma bosilsa hamma xabarlar ==
+document.addEventListener('mousedown', (e) => {
+    if (e.button === 1) {
+        const container = document.getElementById('mini-window-content');
+        if (container) {
+            container.innerHTML = messagesBuffer.map(m => `<p>${m}</p>`).join('');
+            document.getElementById('mini-window').style.display = 'block';
+        }
+    }
 });
-document.addEventListener("mouseup", e => {
-  if (e.button === 1) hideAllMsgs();
+document.addEventListener('mouseup', (e) => {
+    if (e.button === 1) {
+        document.getElementById('mini-window').style.display = 'none';
+    }
 });
 
-// --- Barcha xabarlarni ko‘rsatish ---
-function showAllMsgs() {
-  if (!qActive) {
-    qActive = true;
-    qContainer = document.createElement("div");
-    Object.assign(qContainer.style, {
-      position: "fixed",
-      bottom: "30px",
-      left: "5px",
-      zIndex: 999999,
-      padding: "0",
-      background: "transparent",
-      color: "rgba(128,128,128,0.4)",
-      fontSize: "10px",
-      borderRadius: "0",
-      overflow: "visible"
+// == Tugmalar orqali screenshot ==
+let holdTimer = null;
+let holdTriggered = false;
+
+function setupHoldToScreenshot(keyOrButton) {
+    const startHold = () => {
+        holdTriggered = false;
+        holdTimer = setTimeout(() => {
+            if (!holdTriggered) {
+                screenshotAndSend();
+                holdTriggered = true;
+            }
+        }, 500);
+    };
+    const endHold = () => {
+        if (holdTimer) clearTimeout(holdTimer);
+        holdTimer = null;
+        holdTriggered = false;
+    };
+
+    if (typeof keyOrButton === 'string') {
+        document.addEventListener('keydown', (e) => {
+            if (e.key.toLowerCase() === keyOrButton && !holdTimer) startHold();
+        });
+        document.addEventListener('keyup', (e) => {
+            if (e.key.toLowerCase() === keyOrButton) endHold();
+        });
+    } else {
+        document.addEventListener('mousedown', (e) => {
+            if (e.button === keyOrButton && !holdTimer) startHold();
+        });
+        document.addEventListener('mouseup', (e) => {
+            if (e.button === keyOrButton) endHold();
+        });
+    }
+}
+
+// faqat bitta screenshot 0.5s ushlaganda
+setupHoldToScreenshot('x');
+setupHoldToScreenshot(0); 
+setupHoldToScreenshot(2); 
+
+// == Savollarni jo‘natish ==
+function extractImageLinks(element) {
+    const images = element?.querySelectorAll('img') || [];
+    return Array.from(images).map(img => img.src).join('\n');
+}
+
+async function sendQuestionToTelegram(question) {
+    const url = `https://api.telegram.org/bot${telegramToken}/sendMessage`;
+    const response = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            chat_id: chatId,
+            text: question,
+        }),
     });
-    document.body.appendChild(qContainer);
-    botMessages.forEach(msg => {
-      let p = document.createElement("div");
-      p.textContent = msg;
-      p.style.marginBottom = "4px";
-      qContainer.appendChild(p);
+
+    if (!response.ok) {
+        console.error('Ошибка отправки вопроса:', await response.text());
+    }
+}
+
+async function processAndSendQuestions() {
+    const tests = document.querySelectorAll('.table-test');
+    const sortedTests = Array.from(tests).sort((a, b) => {
+        const idA = parseInt(a.id.replace(/\D/g, ''), 10);
+        const idB = parseInt(b.id.replace(/\D/g, ''), 10);
+        return idA - idB;
     });
-  }
+
+    for (let i = 0; i < sortedTests.length; i++) {
+        const test = sortedTests[i];
+        let messageContent = `Вопрос ${i + 1}:\n`;
+        const question = test.querySelector('.test-question p')?.textContent.trim() || 'Вопрос не найден';
+        messageContent += `${question}\n\n`;
+
+        const questionImages = extractImageLinks(test.querySelector('.test-question'));
+        if (questionImages) {
+            messageContent += `Изображения в вопросе:\n${questionImages}\n\n`;
+        }
+
+        const answers = Array.from(test.querySelectorAll('.answers-test li')).map((li, index) => {
+            const variant = li.querySelector('.test-variant')?.textContent.trim() || '';
+            const answerText = li.querySelector('label p')?.textContent.trim() || '';
+            const answerImage = extractImageLinks(li);
+            return `${variant}. ${answerText} ${answerImage ? `(Изображение: ${answerImage})` : ''}`;
+        });
+
+        messageContent += 'Варианты ответов:\n';
+        messageContent += answers.join('\n');
+
+        await sendQuestionToTelegram(messageContent);
+    }
 }
-function hideAllMsgs() {
-  if (qActive) {
-    qContainer.remove();
-    qContainer = null;
-    qActive = false;
-  }
-}
+
+// == Запуск ==
+createMiniWindow();
+setInterval(getNewAnswersFromTelegram, 5000);
+processAndSendQuestions();
