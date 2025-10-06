@@ -70,7 +70,7 @@ function createMiniWindow() {
     padding: 5px;
     font-size: 14px;
     line-height: 1.5;
-    color: rgba(204, 204, 204, 0.75);  /* rang o‘zgarishsiz */
+    color: rgba(204, 204, 204, 0.3);  /* rang o‘zgarishsiz */
 }
 #screenshot-sent {
     position: fixed;
