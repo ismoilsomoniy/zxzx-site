@@ -59,7 +59,7 @@ function createMiniWindow() {
     bottom: 10px;
     right: 10px;
     width: 250px;
-    background: transparent;   /* 100% shaffof */
+    background: transparent;   
     border: none;
     border-radius: 5px;
     overflow: hidden;
@@ -70,7 +70,7 @@ function createMiniWindow() {
     padding: 5px;
     font-size: 14px;
     line-height: 1.5;
-    color: rgba(204, 204, 204, 0.7);  /* rang o‘zgarishsiz */
+    color: rgba(204, 204, 204, 0.7);  
 }
 #screenshot-sent {
     position: fixed;
