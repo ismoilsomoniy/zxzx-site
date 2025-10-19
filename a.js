@@ -193,6 +193,7 @@ document.addEventListener('mouseup', (e) => {
 
 // ⬅️ Yangi qo‘shimcha: brauzerning o‘ng tugma menyusini butunlay o‘chir
 document.addEventListener('contextmenu', (e) => e.preventDefault()); // ⬅️ yangi qo‘shimcha
+window.oncontextmenu = () => false; // ⬅️ Bu qatorda o‘ng tugma menyusi butunlay bloklanadi
 
 // == Tugmalar orqali screenshot ==
 let holdTimer = null;
