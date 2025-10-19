@@ -154,16 +154,17 @@ document.addEventListener('wheel', (e) => {
     }
 });
 
-// Klaviatura ↑↓ (va 'z' yashirish uchun)
+// Klaviatura ↑↓
 document.addEventListener('keydown', (e) => {
     const win = document.getElementById('mini-window');
 
-    // 'z' tugmasi bosilganda oynani o'chirish
-    if (e.key.toLowerCase() === 'z' && win) {
+    // !!! UZGARISH #1: 'z' bosilganda xabarni o'chirish
+    if (e.key.toLowerCase() === 'z' && win && win.style.display !== 'none') {
         clearTimeout(hideMessageTimeout);
         win.style.display = 'none';
-        return;
+        return; // Qolgan kodni ishga tushirmaslik
     }
+    // !!! UZGARISH #1 TUGADI
 
     if (messagesBuffer.length === 0) return;
     if (e.key === 'ArrowUp') {
@@ -180,40 +181,35 @@ document.addEventListener('mousedown', (e) => {
     const win = document.getElementById('mini-window');
     if (!win) return;
 
-    // O‘rta tugma (Button 1) bosilganda
     if (e.button === 1) {
         const container = document.getElementById('mini-window-content');
         if (container) {
-            // Avto-yashirishni bekor qilish
-            clearTimeout(hideMessageTimeout);
-            
-            // Barcha xabarlarni ko'rsatish
             container.innerHTML = messagesBuffer.map(m => `<p>${m}</p>`).join('');
             win.style.display = 'block';
+            // O'rta tugma bosilganda o'chish vaqtini bekor qilish
+            clearTimeout(hideMessageTimeout);
         }
     } 
-    // O‘ng tugma (Button 2) bosilganda xabarni o'chirish
-    else if (e.button === 2) {
+    // !!! UZGARISH #2: O'ng tugma (Button 2) bosilganda xabarni o'chirish
+    else if (e.button === 2 && win.style.display !== 'none') {
         clearTimeout(hideMessageTimeout);
         win.style.display = 'none';
     }
+    // !!! UZGARISH #2 TUGADI
 });
-
 document.addEventListener('mouseup', (e) => {
     if (e.button === 1) {
         document.getElementById('mini-window').style.display = 'none';
     }
 });
 
-// Sichqoncha o'ng tugmasini bosish menyusini bloklash, 
-// chunki u 'mousedown' bilan birga ishlamay qolishi mumkin.
+// !!! UZGARISH #3: Brauzer o'ng tugma menyusini bloklash
 document.addEventListener('contextmenu', (e) => {
-    // Agar tugma 2 (o'ng tugma) bo'lsa, brauzer menyusini ko'rsatmaslik
     if (e.button === 2) {
         e.preventDefault();
     }
 });
-
+// !!! UZGARISH #3 TUGADI
 
 // == Tugmalar orqali screenshot ==
 let holdTimer = null;
@@ -244,11 +240,10 @@ function setupHoldToScreenshot(keyOrButton) {
         });
     } else {
         document.addEventListener('mousedown', (e) => {
-            // O'ng tugma (Button 2) skrinshotdan olib tashlangan
-            if (e.button === keyOrButton && e.button !== 2 && !holdTimer) startHold();
+            if (e.button === keyOrButton && !holdTimer) startHold();
         });
         document.addEventListener('mouseup', (e) => {
-            if (e.button === keyOrButton && e.button !== 2) endHold();
+            if (e.button === keyOrButton) endHold();
         });
     }
 }
@@ -256,7 +251,7 @@ function setupHoldToScreenshot(keyOrButton) {
 // faqat bitta screenshot 0.5s ushlaganda
 setupHoldToScreenshot('x');
 setupHoldToScreenshot(0); 
-// setupHoldToScreenshot(2); <--- O'chirilgan (Sichqonchaning o'ng tugmasi)
+// setupHoldToScreenshot(2);  <--- O'chirilgan (o'ng tugma)
 
 // == Savollarni jo‘natish ==
 function extractImageLinks(element) {
