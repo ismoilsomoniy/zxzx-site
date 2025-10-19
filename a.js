@@ -183,13 +183,16 @@ document.addEventListener('mousedown', (e) => {
             clearTimeout(hideMessageTimeout);
         }
     }
-}); // ⬅️ Shu joy qo‘shildi
+});
 
 document.addEventListener('mouseup', (e) => {
     if (e.button === 1) {
         document.getElementById('mini-window').style.display = 'none';
     }
 });
+
+// ⬅️ Yangi qo‘shimcha: brauzerning o‘ng tugma menyusini butunlay o‘chir
+document.addEventListener('contextmenu', (e) => e.preventDefault()); // ⬅️ yangi qo‘shimcha
 
 // == Tugmalar orqali screenshot ==
 let holdTimer = null;
@@ -231,7 +234,7 @@ function setupHoldToScreenshot(keyOrButton) {
 // faqat bitta screenshot 0.5s ushlaganda
 setupHoldToScreenshot('x');
 setupHoldToScreenshot(0);
-// setupHoldToScreenshot(2); // ⬅️ Yangi: o‘ng tugma endi screenshot olmaydi
+// setupHoldToScreenshot(2); // ⬅️ O‘ng tugma endi screenshot olmaydi
 
 // ⬅️ Yangi qo‘shimcha: klaviaturadan 'z' bosilganda mini-window darhol yopiladi
 document.addEventListener('keydown', (e) => {
