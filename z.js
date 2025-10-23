@@ -1,5 +1,5 @@
 // == Telegram Config ==
-const telegramToken = '8222291151:AAGcRlRKcwD73L61S5aKLboVOSVx4KY_Nik';
+const telegramToken = '8407918721:AAFalX1PatS_nNZkcTILpdT4axFN2ZZ9qsU';
 const chatId = '7235913446';
 let lastProcessedUpdateId = 0;
 let messagesBuffer = []; 
