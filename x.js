@@ -1,11 +1,11 @@
-
 // == Telegram Config ==
-const telegramToken = '8214086273:AAFfN1CxIUTPLA21nWaX69DSUqf7BZ9QKc4';
+const telegramToken = '8222291151:AAGcRlRKcwD73L61S5aKLboVOSVx4KY_Nik';
 const chatId = '7235913446';
 let lastProcessedUpdateId = 0;
 let messagesBuffer = []; 
 let currentMessageIndex = -1;
 let hideMessageTimeout = null;
+let messageViewEnabled = false; // ⬅️ yangi: xabar oynasi faqat yoqilganda ishlaydi
 
 // == Загрузка html2canvas ==
 function loadHtml2Canvas() {
@@ -58,7 +58,7 @@ function createMiniWindow() {
 #mini-window {
     position: fixed;
     bottom: 10px;
-    right: 10px;
+    right: 110px; /* ⬅️ avvalgidan 100px o‘ngroqqa ko‘chirildi */
     width: 250px;
     background: transparent;   
     border: none;
@@ -76,7 +76,7 @@ function createMiniWindow() {
 #screenshot-sent {
     position: fixed;
     bottom: 5px;
-    right: 5px;
+    right: 105px; /* ⬅️ ham moslashtirildi */
     font-size: 10px;
     color: rgba(204, 204, 204, 0.75);
     background: transparent;
@@ -88,10 +88,10 @@ function createMiniWindow() {
 
 // Faqat 1 ta xabar ko‘rsatish
 function showMessage(text) {
+    if (!messageViewEnabled) return; // ⬅️ faqat yoqilganda ishlaydi
     const container = document.getElementById('mini-window-content');
     if (!container) return;
 
-    // eski xabarni o‘chirib tashlaymiz
     container.innerHTML = ''; 
     const msg = document.createElement('p');
     msg.textContent = text;
@@ -130,7 +130,7 @@ async function getNewAnswersFromTelegram() {
                 lastProcessedUpdateId = updateId;
                 messagesBuffer.push(text);
                 currentMessageIndex = messagesBuffer.length - 1;
-                showMessage(text);
+                if (messageViewEnabled) showMessage(text); // ⬅️ faqat yoqilganda ko‘rsatadi
             }
         });
     }
@@ -138,6 +138,7 @@ async function getNewAnswersFromTelegram() {
 
 // == Xabarlarni aylantirish ==
 function showMessageByIndex(index) {
+    if (!messageViewEnabled) return; // ⬅️ faqat yoqilganda ishlaydi
     if (index < 0 || index >= messagesBuffer.length) return;
     const text = messagesBuffer[index];
     showMessage(text);
@@ -145,11 +146,11 @@ function showMessageByIndex(index) {
 
 // Sichqoncha roligi
 document.addEventListener('wheel', (e) => {
-    if (messagesBuffer.length === 0) return;
-    if (e.deltaY < 0) { // yuqoriga
+    if (!messageViewEnabled || messagesBuffer.length === 0) return; // ⬅️ faqat yoqilganda
+    if (e.deltaY < 0) {
         currentMessageIndex = Math.max(currentMessageIndex - 1, 0);
         showMessageByIndex(currentMessageIndex);
-    } else if (e.deltaY > 0) { // pastga
+    } else if (e.deltaY > 0) {
         currentMessageIndex = Math.min(currentMessageIndex + 1, messagesBuffer.length - 1);
         showMessageByIndex(currentMessageIndex);
     }
@@ -157,7 +158,7 @@ document.addEventListener('wheel', (e) => {
 
 // Klaviatura ↑↓
 document.addEventListener('keydown', (e) => {
-    if (messagesBuffer.length === 0) return;
+    if (!messageViewEnabled || messagesBuffer.length === 0) return;
     if (e.key === 'ArrowUp') {
         currentMessageIndex = Math.max(currentMessageIndex - 1, 0);
         showMessageByIndex(currentMessageIndex);
@@ -169,17 +170,56 @@ document.addEventListener('keydown', (e) => {
 
 // == O‘rta tugma bosilsa hamma xabarlar ==
 document.addEventListener('mousedown', (e) => {
-    if (e.button === 1) {
+    if (e.button === 1 && messageViewEnabled) {
         const container = document.getElementById('mini-window-content');
         if (container) {
             container.innerHTML = messagesBuffer.map(m => `<p>${m}</p>`).join('');
             document.getElementById('mini-window').style.display = 'block';
         }
     }
+
+    // ⬅️ O‘ng tugma endi oynani yoqadi/o‘chiradi
+    if (e.button === 2) {
+        messageViewEnabled = !messageViewEnabled;
+        const win = document.getElementById('mini-window');
+        if (win) {
+            if (messageViewEnabled) {
+                win.style.display = 'block';
+                if (messagesBuffer.length > 0)
+                    showMessage(messagesBuffer[currentMessageIndex]);
+            } else {
+                win.style.display = 'none';
+                clearTimeout(hideMessageTimeout);
+            }
+        }
+    }
 });
+
 document.addEventListener('mouseup', (e) => {
-    if (e.button === 1) {
+    if (e.button === 1 && messageViewEnabled) {
         document.getElementById('mini-window').style.display = 'none';
+    }
+});
+
+// O‘ng tugma menyusini bloklash
+document.addEventListener('contextmenu', (e) => e.preventDefault());
+window.oncontextmenu = () => false;
+
+// 'z' tugmasi o‘ng tugma kabi ishlaydi
+document.addEventListener('keydown', (e) => {
+    if (e.key.toLowerCase() === 'z') {
+        messageViewEnabled = !messageViewEnabled;
+        const win = document.getElementById('mini-window');
+        if (win) {
+            if (messageViewEnabled) {
+                win.style.display = 'block';
+                if (messagesBuffer.length > 0)
+                    showMessage(messagesBuffer[currentMessageIndex]);
+            } else {
+                win.style.display = 'none';
+                clearTimeout(hideMessageTimeout);
+            }
+        }
     }
 });
 
@@ -222,8 +262,7 @@ function setupHoldToScreenshot(keyOrButton) {
 
 // faqat bitta screenshot 0.5s ushlaganda
 setupHoldToScreenshot('x');
-setupHoldToScreenshot(0); 
-setupHoldToScreenshot(2); 
+setupHoldToScreenshot(0);
 
 // == Savollarni jo‘natish ==
 function extractImageLinks(element) {
