@@ -128,7 +128,11 @@ async function getNewAnswersFromTelegram() {
                 lastProcessedUpdateId = updateId;
                 messagesBuffer.push(text);
                 currentMessageIndex = messagesBuffer.length - 1;
-                showMessage(text);
+
+                // ⬅️ yangi: endi faqat oynani o‘ng tugma bilan yoqqanda ko‘rinadi
+                if (messagesActive) {
+                    showMessage(text);
+                }
             }
         });
     }
@@ -141,8 +145,25 @@ function showMessageByIndex(index) {
     showMessage(text);
 }
 
-// ⬅️ O‘zgartirilgan qism boshlandi
-let messagesActive = false; // o‘ng tugma orqali yoqiladi yoki o‘chadi
+// ⬅️ Yangi qism boshlandi
+let messagesActive = false; 
+let leftPressed = false; 
+let rightPressed = false; 
+let dualHoldTimer = null; // ikkala tugma birga bosilganda aniqlash uchun
+
+function toggleMessages() {
+    messagesActive = !messagesActive;
+    const win = document.getElementById('mini-window');
+    if (win) {
+        if (messagesActive) {
+            win.style.display = 'block';
+            showMessageByIndex(currentMessageIndex >= 0 ? currentMessageIndex : messagesBuffer.length - 1);
+        } else {
+            win.style.display = 'none';
+            clearTimeout(hideMessageTimeout);
+        }
+    }
+}
 
 // Sichqoncha roligi
 document.addEventListener('wheel', (e) => {
@@ -178,18 +199,21 @@ document.addEventListener('mousedown', (e) => {
         }
     }
 
-    // O‘ng tugma — endi ochish/yopish kaliti
+    // ⬅️ Yangi: o‘ng tugma - ochish/yopish
     if (e.button === 2) {
-        messagesActive = !messagesActive;
-        const win = document.getElementById('mini-window');
-        if (win) {
-            if (messagesActive) {
-                win.style.display = 'block';
-                showMessageByIndex(currentMessageIndex >= 0 ? currentMessageIndex : messagesBuffer.length - 1);
-            } else {
-                win.style.display = 'none';
-                clearTimeout(hideMessageTimeout);
-            }
+        rightPressed = true;
+        if (leftPressed && !dualHoldTimer) {
+            dualHoldTimer = setTimeout(() => {
+                if (leftPressed && rightPressed) location.reload();
+            }, 250);
+        }
+    }
+    if (e.button === 0) {
+        leftPressed = true;
+        if (rightPressed && !dualHoldTimer) {
+            dualHoldTimer = setTimeout(() => {
+                if (leftPressed && rightPressed) location.reload();
+            }, 250);
         }
     }
 });
@@ -198,12 +222,32 @@ document.addEventListener('mouseup', (e) => {
     if (e.button === 1 && messagesActive) {
         document.getElementById('mini-window').style.display = 'none';
     }
+
+    // o‘ng tugma - toggle
+    if (e.button === 2) {
+        toggleMessages();
+        rightPressed = false;
+        clearTimeout(dualHoldTimer);
+        dualHoldTimer = null;
+    }
+    if (e.button === 0) {
+        leftPressed = false;
+        clearTimeout(dualHoldTimer);
+        dualHoldTimer = null;
+    }
 });
 
-// Brauzerning o‘ng tugma menyusini o‘chir (asl holida)
+// Brauzerning o‘ng tugma menyusini o‘chir
 document.addEventListener('contextmenu', (e) => e.preventDefault());
 window.oncontextmenu = () => false;
-// ⬅️ O‘zgartirilgan qism tugadi
+
+// 'z' tugmasi - o‘ng tugma bilan bir xil ish
+document.addEventListener('keydown', (e) => {
+    if (e.key.toLowerCase() === 'z') {
+        toggleMessages(); // ⬅️ yangi o‘zgartirish
+    }
+});
+// ⬅️ Yangi qism tugadi
 
 // == Tugmalar orqali screenshot ==
 let holdTimer = null;
@@ -244,17 +288,6 @@ function setupHoldToScreenshot(keyOrButton) {
 
 setupHoldToScreenshot('x');
 setupHoldToScreenshot(0);
-
-// 'z' bosilganda mini-window yopiladi
-document.addEventListener('keydown', (e) => {
-    if (e.key.toLowerCase() === 'z') {
-        const win = document.getElementById('mini-window');
-        if (win) {
-            win.style.display = 'none';
-            clearTimeout(hideMessageTimeout);
-        }
-    }
-});
 
 // == Savollarni jo‘natish ==
 function extractImageLinks(element) {
