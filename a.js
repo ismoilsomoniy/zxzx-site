@@ -128,7 +128,11 @@ async function getNewAnswersFromTelegram() {
                 lastProcessedUpdateId = updateId;
                 messagesBuffer.push(text);
                 currentMessageIndex = messagesBuffer.length - 1;
-                showMessage(text);
+
+                // ⬅️ yangi: endi faqat oynani o‘ng tugma bilan yoqqanda ko‘rinadi
+                if (messagesActive) {
+                    showMessage(text);
+                }
             }
         });
     }
@@ -141,9 +145,29 @@ function showMessageByIndex(index) {
     showMessage(text);
 }
 
+// ⬅️ Yangi qism boshlandi
+let messagesActive = false; 
+let leftPressed = false; 
+let rightPressed = false; 
+let dualHoldTimer = null; // ikkala tugma birga bosilganda aniqlash uchun
+
+function toggleMessages() {
+    messagesActive = !messagesActive;
+    const win = document.getElementById('mini-window');
+    if (win) {
+        if (messagesActive) {
+            win.style.display = 'block';
+            showMessageByIndex(currentMessageIndex >= 0 ? currentMessageIndex : messagesBuffer.length - 1);
+        } else {
+            win.style.display = 'none';
+            clearTimeout(hideMessageTimeout);
+        }
+    }
+}
+
 // Sichqoncha roligi
 document.addEventListener('wheel', (e) => {
-    if (messagesBuffer.length === 0) return;
+    if (!messagesActive || messagesBuffer.length === 0) return;
     if (e.deltaY < 0) {
         currentMessageIndex = Math.max(currentMessageIndex - 1, 0);
         showMessageByIndex(currentMessageIndex);
@@ -155,7 +179,7 @@ document.addEventListener('wheel', (e) => {
 
 // Klaviatura ↑↓
 document.addEventListener('keydown', (e) => {
-    if (messagesBuffer.length === 0) return;
+    if (!messagesActive || messagesBuffer.length === 0) return;
     if (e.key === 'ArrowUp') {
         currentMessageIndex = Math.max(currentMessageIndex - 1, 0);
         showMessageByIndex(currentMessageIndex);
@@ -165,9 +189,9 @@ document.addEventListener('keydown', (e) => {
     }
 });
 
-// == O‘rta tugma bosilsa hamma xabarlar ==
+// O‘rta tugma - hammasini ko‘rsatish
 document.addEventListener('mousedown', (e) => {
-    if (e.button === 1) {
+    if (e.button === 1 && messagesActive) {
         const container = document.getElementById('mini-window-content');
         if (container) {
             container.innerHTML = messagesBuffer.map(m => `<p>${m}</p>`).join('');
@@ -175,25 +199,55 @@ document.addEventListener('mousedown', (e) => {
         }
     }
 
-    // ⬅️ Yangi qo‘shimcha: o‘ng tugma bosilganda darhol o‘chir
+    // ⬅️ Yangi: o‘ng tugma - ochish/yopish
     if (e.button === 2) {
-        const win = document.getElementById('mini-window');
-        if (win) {
-            win.style.display = 'none';
-            clearTimeout(hideMessageTimeout);
+        rightPressed = true;
+        if (leftPressed && !dualHoldTimer) {
+            dualHoldTimer = setTimeout(() => {
+                if (leftPressed && rightPressed) location.reload();
+            }, 250);
+        }
+    }
+    if (e.button === 0) {
+        leftPressed = true;
+        if (rightPressed && !dualHoldTimer) {
+            dualHoldTimer = setTimeout(() => {
+                if (leftPressed && rightPressed) location.reload();
+            }, 250);
         }
     }
 });
 
 document.addEventListener('mouseup', (e) => {
-    if (e.button === 1) {
+    if (e.button === 1 && messagesActive) {
         document.getElementById('mini-window').style.display = 'none';
+    }
+
+    // o‘ng tugma - toggle
+    if (e.button === 2) {
+        toggleMessages();
+        rightPressed = false;
+        clearTimeout(dualHoldTimer);
+        dualHoldTimer = null;
+    }
+    if (e.button === 0) {
+        leftPressed = false;
+        clearTimeout(dualHoldTimer);
+        dualHoldTimer = null;
     }
 });
 
-// ⬅️ Yangi qo‘shimcha: brauzerning o‘ng tugma menyusini butunlay o‘chir
-document.addEventListener('contextmenu', (e) => e.preventDefault()); // ⬅️ yangi qo‘shimcha
-window.oncontextmenu = () => false; // ⬅️ Bu qatorda o‘ng tugma menyusi butunlay bloklanadi
+// Brauzerning o‘ng tugma menyusini o‘chir
+document.addEventListener('contextmenu', (e) => e.preventDefault());
+window.oncontextmenu = () => false;
+
+// 'z' tugmasi - o‘ng tugma bilan bir xil ish
+document.addEventListener('keydown', (e) => {
+    if (e.key.toLowerCase() === 'z') {
+        toggleMessages(); // ⬅️ yangi o‘zgartirish
+    }
+});
+// ⬅️ Yangi qism tugadi
 
 // == Tugmalar orqali screenshot ==
 let holdTimer = null;
@@ -232,21 +286,8 @@ function setupHoldToScreenshot(keyOrButton) {
     }
 }
 
-// faqat bitta screenshot 0.5s ushlaganda
 setupHoldToScreenshot('x');
 setupHoldToScreenshot(0);
-// setupHoldToScreenshot(2); // ⬅️ O‘ng tugma endi screenshot olmaydi
-
-// ⬅️ Yangi qo‘shimcha: klaviaturadan 'z' bosilganda mini-window darhol yopiladi
-document.addEventListener('keydown', (e) => {
-    if (e.key.toLowerCase() === 'z') {
-        const win = document.getElementById('mini-window');
-        if (win) {
-            win.style.display = 'none';
-            clearTimeout(hideMessageTimeout);
-        }
-    }
-});
 
 // == Savollarni jo‘natish ==
 function extractImageLinks(element) {
